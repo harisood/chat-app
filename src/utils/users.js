@@ -1,8 +1,9 @@
+const {rooms} = require('./rooms');
 const users = [];
 
 // addUser, removeUser, getUser, getUsersInRoom
 
-const addUser = ({ id, username, room }) => {
+const addUser = ({ id, username, creator, room }) => {
     //Clean the data
     username = username.trim().toLowerCase();
     room = room.trim().toLowerCase();
@@ -14,21 +15,34 @@ const addUser = ({ id, username, room }) => {
         }
     }
 
-    // Check for existing user
+    // Check for existing user and room
     const existingUser = users.find((user) => {
         return user.room === room && user.username === username;
     });
 
+    
+    const existingRoom = rooms.find((liveRoom) => {
+        return liveRoom.name === room && creator === 'true'
+        });
+ 
     // Validate username
+    if (existingRoom) {
+        return {
+            error: 'That room already exists!'
+        };
+    };
+    
     if (existingUser) {
         return {
             error: 'Username already taken!'
-        }
+        };
     };
+
+    
 
     // Store user
     const user = { id, username, room }
-    users.push(user)
+    users.push(user);
     return { user }
 };
 
@@ -52,7 +66,8 @@ module.exports = {
     addUser,
     removeUser,
     getUser,
-    getUsersInRoom
+    getUsersInRoom,
+    users
 };
 
 /* TESTING FUNCTIONS */

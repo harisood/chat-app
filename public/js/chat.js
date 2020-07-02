@@ -13,7 +13,7 @@ const $locationUrlTemplate = document.querySelector('#location-template').innerH
 const $sidebarTemplate = document.querySelector('#sidebar-template').innerHTML;
 
 // Options
-const {username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true });
+const {username, creator, room } = Qs.parse(location.search, { ignoreQueryPrefix: true });
 
 const autoscroll = () => {
     // New message element
@@ -66,7 +66,8 @@ socket.on('roomData', ({ room, users }) => {
         users
     });
     document.querySelector('#sidebar').innerHTML = html;
-})
+});
+
 
 $messageForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -111,7 +112,7 @@ $locationButton.addEventListener('click', () => {
     });
 });
 
-socket.emit('join', { username, room }, (error) => {
+socket.emit('join', { username, creator, room }, (error) => {
     if (error) {
         alert(error)
         location.href = '/';

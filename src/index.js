@@ -5,6 +5,7 @@ const socketio = require('socket.io');
 const Filter = require('bad-words');
 const { generateMessage, generateLocationMessage } = require('./utils/messages');
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users');
+const { addRoom, recountRoom, generateRooms } = require('./utils/rooms')
 
 const app = express();
 const server = http.createServer(app);
@@ -20,12 +21,15 @@ app.use(express.static(publicDirectoryPath));
 io.on('connection', (socket) => {
     console.log(`New websocket connection`);
 
-    socket.on('join', ({ username, room }, callback) => {
-        const { error, user } = addUser( {id: socket.id, username, room });
+    io.emit('currentRooms', generateRooms());
+
+    socket.on('join', ({ username, creator, room }, callback) => {
+        const { error, user } = addUser( {id: socket.id, username, creator, room });
 
         if (error) {
             return callback(error)
         }
+
 
         socket.join(user.room);
 
@@ -35,6 +39,7 @@ io.on('connection', (socket) => {
             room: user.room,
             users: getUsersInRoom(user.room)
         });
+        io.emit('currentRooms', addRoom( { room } ));
 
         callback();
     });
@@ -77,6 +82,8 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id);
 
         if (user) {
+            ;
+            io.emit('currentRooms', recountRoom(user.room));
             io.to(user.room).emit('message', generateMessage(user.room, `${user.username} has left`));
             io.to(user.room).emit('roomData', {
                 room: user.room,
